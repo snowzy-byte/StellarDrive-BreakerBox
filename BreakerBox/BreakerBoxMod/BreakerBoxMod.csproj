@@ -1,0 +1,143 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>BreakerBoxMod</RootNamespace>
+    <AssemblyName>BreakerBoxMod</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DebugType>none</DebugType>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <NoWarn>$(NoWarn);CS1591;NU1701;NU1702</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Modelo3D\BreakerBox.obj">
+      <Link>BreakerBox.obj</Link>
+      <LogicalName>BreakerBox.obj</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)\MelonLoader\net472\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MelonLoader">
+      <HintPath>$(GamePath)\MelonLoader\net472\MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="SDModKit">
+      <Private>false</Private>
+      <HintPath>$(GamePath)\Mods\SDModKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Core">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Ships">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Ships.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Ships.Interface">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Ships.Interface.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Research.Interface">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Research.Interface.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="CablesMesh">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\CablesMesh.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Players">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Players.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Players.Interface">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Players.Interface.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="FishNet.Runtime">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\FishNet.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="WorldNetworking">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\WorldNetworking.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Unity.InputSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Unity.Mathematics.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="WorldTracking.Interface">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\WorldTracking.Interface.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.Localization">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Unity.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.ResourceManager">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Unity.ResourceManager.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Managers.Interface">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Managers.Interface.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
