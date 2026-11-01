@@ -1,4 +1,4 @@
-If find any bug Tell me on discord: benmal0_0
+If you find any bug tell me on discord: benmal0_0
 # Breaker Box — StellarDrive Demo
 
 [English below](#english)
