@@ -22,13 +22,30 @@ public sealed class BreakerState
     };
     public int Limit;
     public int Display;
+    public byte WrongWay;
     public void AdvanceLimit()
     {
         Limit = (Math.Max(0, Math.Min(Limits.Length - 1, Limit)) + 1) % Limits.Length;
         Display = 0;
     }
 
-    public bool Conducts(int channel) => Master && Channels[channel];
+    public bool Conducts(int channel) => Master && Channels[channel] && (WrongWay & (1 << channel)) == 0;
+
+    public void ToggleChannel(int channel) => Channels[channel] = !Channels[channel] && (WrongWay & (1 << channel)) == 0;
+
+    public bool ProtectDirection(byte faultMask)
+    {
+        faultMask &= 15;
+        bool changed = WrongWay != faultMask;
+        WrongWay = faultMask;
+        for (int i = 0; i < 4; i++)
+            if ((faultMask & (1 << i)) != 0 && Channels[i])
+            {
+                Channels[i] = false;
+                changed = true;
+            }
+        return changed;
+    }
     public void SetMaster(bool enabled)
     {
         Master = enabled;

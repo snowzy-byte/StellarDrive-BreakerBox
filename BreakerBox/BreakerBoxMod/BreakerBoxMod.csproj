@@ -17,12 +17,10 @@
     <Compile Include="*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\..\Modelo3D\BreakerBox.obj">
-      <Link>BreakerBox.obj</Link>
-      <LogicalName>BreakerBox.obj</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
+    <Reference Include="Tools">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\Tools.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="0Harmony">
       <HintPath>$(GamePath)\MelonLoader\net472\0Harmony.dll</HintPath>
       <Private>false</Private>

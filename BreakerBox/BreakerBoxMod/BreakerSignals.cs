@@ -29,6 +29,7 @@ public static class BreakerSignals
     private static readonly Dictionary<PartContext, Entry> Entries = new Dictionary<PartContext, Entry>();
     private static readonly List<PartContext> Removed = new List<PartContext>();
     private static ConnectionsServerTracker _lastTracker;
+    private static BreakerSignalReader _reader;
     private static bool _installed;
     public static event Action<uint, ushort> StateChanged;
     public static void Install(HarmonyLib.Harmony harmony)
@@ -42,6 +43,8 @@ public static class BreakerSignals
 
     public static void Clear()
     {
+        _reader?.Dispose();
+        _reader = null;
         Entries.Clear();
         TripHigh.Clear();
         Readings.Clear();
@@ -56,7 +59,8 @@ public static class BreakerSignals
         {
             Master = config.GetBool("master", true),
             Limit = Math.Max(0, Math.Min(5, config.GetInt("limit", 0))),
-            Display = config.GetInt("display", 0) == 1 ? 1 : 0
+            Display = config.GetInt("display", 0) == 1 ? 1 : 0,
+            WrongWay = (byte)Math.Max(0, Math.Min(15, config.GetInt("wrongWay", 0)))
         };
         for (int i = 0; i < 4; i++)
             state.Channels[i] = config.GetBool(ChannelKeys[i], true);
@@ -68,6 +72,7 @@ public static class BreakerSignals
         config.Set("master", state.Master);
         config.Set("limit", Math.Max(0, Math.Min(5, state.Limit)));
         config.Set("display", state.Display == 1 ? 1 : 0);
+        config.Set("wrongWay", state.WrongWay & 15);
         for (int i = 0; i < 4; i++)
             config.Set(ChannelKeys[i], state.Channels[i]);
     }
@@ -85,6 +90,7 @@ public static class BreakerSignals
         public BreakerState State;
         public double[] Inputs = new double[4];
         public double Trip;
+        public byte WrongWay;
         public int AppliedMask = -1;
     }
 
@@ -98,6 +104,7 @@ public static class BreakerSignals
         {
             Clear();
             _lastTracker = __instance;
+            _reader = new BreakerSignalReader(__instance.SignalConnectionGroups, ships);
         }
 
         Removed.Clear();
@@ -113,6 +120,7 @@ public static class BreakerSignals
             entry.State.Master = entry.Config.GetBool("master", true);
             entry.State.Limit = Math.Max(0, Math.Min(5, entry.Config.GetInt("limit", 0)));
             entry.State.Display = entry.Config.GetInt("display", 0);
+            entry.State.WrongWay = (byte)Math.Max(0, Math.Min(15, entry.Config.GetInt("wrongWay", 0)));
             int mask = entry.State.Master ? 1 : 0;
             for (int i = 0; i < 4; i++)
             {
@@ -137,8 +145,13 @@ public static class BreakerSignals
 
         foreach (var entry in Entries.Values)
         {
+            entry.WrongWay = 0;
             for (byte channel = 0; channel < 4; channel++)
-                entry.Inputs[channel] = __instance.GetSignalValue(new EntityPartSocket(entry.ShipId, entry.PartId, channel));
+            {
+                entry.Inputs[channel] = _reader.Read(new EntityPartSocket(entry.ShipId, entry.PartId, channel));
+                if (_reader.Read(new EntityPartSocket(entry.ShipId, entry.PartId, (byte)(channel + 4))) != 0)
+                    entry.WrongWay |= (byte)(1 << channel);
+            }
             entry.Trip = __instance.GetSignalValue(new EntityPartSocket(entry.ShipId, entry.PartId, 8));
         }
 
@@ -146,7 +159,8 @@ public static class BreakerSignals
         {
             var key = new PartContext(entry.ShipId, entry.PartId);
             TripHigh.TryGetValue(key, out bool high);
-            bool changed = entry.State.Protect(entry.Inputs, entry.Trip, ref high);
+            bool changed = entry.State.ProtectDirection(entry.WrongWay);
+            changed |= entry.State.Protect(entry.Inputs, entry.Trip, ref high);
             TripHigh[key] = high;
             Readings[key] = entry.Inputs;
             if (!changed)

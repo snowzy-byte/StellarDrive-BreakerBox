@@ -2,7 +2,7 @@
   "id": "Breaker_Mod",
   "name": "Breaker Box mod",
   "author": "Ghost",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Breaker Box helps organize and control your ship’s signal wiring.\nIt features four independent channels, each with its own input, output, and switch. A master switch turns off and disarms all channels.",
   "thumbnail": "images/breaker-box.png",
   "images": [],

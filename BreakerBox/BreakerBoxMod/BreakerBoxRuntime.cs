@@ -44,7 +44,7 @@ public static class BreakerBoxRuntime
         public uint Ship;
         public ushort Part;
         public uint Revision;
-        public byte Flags, Limit, Display;
+        public byte Flags, Limit, Display, WrongWay;
         public double A, B, C, D;
         public double[] Inputs => new[]
         {
@@ -62,7 +62,8 @@ public static class BreakerBoxRuntime
                 {
                     Master = (Flags & 1) != 0,
                     Limit = Limit,
-                    Display = Display
+                    Display = Display,
+                    WrongWay = WrongWay
                 };
                 for (int i = 0; i < 4; i++)
                     state.Channels[i] = (Flags & (2 << i)) != 0;
@@ -80,7 +81,7 @@ public static class BreakerBoxRuntime
     {
         Id = "breakerbox",
         Name = "Breaker Box",
-        Version = "1.1.0",
+        Version = "1.2.0",
         Assembly = typeof(BreakerBoxRuntime).Assembly
     };
     public static string HoverLabel;
@@ -104,12 +105,13 @@ public static class BreakerBoxRuntime
             w.WriteUInt8Unpacked(m.Flags);
             w.WriteUInt8Unpacked(m.Limit);
             w.WriteUInt8Unpacked(m.Display);
+            w.WriteUInt8Unpacked(m.WrongWay);
             w.WriteDouble(m.A);
             w.WriteDouble(m.B);
             w.WriteDouble(m.C);
             w.WriteDouble(m.D);
         });
-        GenericReader<Snapshot>.SetRead(r => new Snapshot { Ship = r.ReadUInt32(), Part = r.ReadUInt16(), Revision = r.ReadUInt32(), Flags = r.ReadUInt8Unpacked(), Limit = r.ReadUInt8Unpacked(), Display = r.ReadUInt8Unpacked(), A = r.ReadDouble(), B = r.ReadDouble(), C = r.ReadDouble(), D = r.ReadDouble() });
+        GenericReader<Snapshot>.SetRead(r => new Snapshot { Ship = r.ReadUInt32(), Part = r.ReadUInt16(), Revision = r.ReadUInt32(), Flags = r.ReadUInt8Unpacked(), Limit = r.ReadUInt8Unpacked(), Display = r.ReadUInt8Unpacked(), WrongWay = r.ReadUInt8Unpacked(), A = r.ReadDouble(), B = r.ReadDouble(), C = r.ReadDouble(), D = r.ReadDouble() });
     }
 
     public static void Configure(PartSettings settings, GameObject prefab)
@@ -142,40 +144,21 @@ public static class BreakerBoxRuntime
                 continue;
             var group = visual.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == names[i]);
             if (group == null)
-                throw new InvalidOperationException("OBJ control missing: " + names[i]);
+                throw new InvalidOperationException("Breaker Box control missing: " + names[i]);
             var mesh = group.GetComponentInChildren<MeshFilter>();
             var localBounds = mesh != null ? mesh.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.one * 0.04f);
-            Vector3 position = interactionRoot.transform.InverseTransformPoint(group.TransformPoint(localBounds.center));
             var control = new GameObject("BreakerControl_" + i);
             control.transform.SetParent(interactionRoot.transform, false);
-            control.transform.localPosition = position;
             control.transform.localRotation = Quaternion.Inverse(interactionRoot.transform.rotation) * group.rotation;
             control.layer = donor != null ? donor.gameObject.layer : interactionRoot.layer;
             control.tag = "Interactable";
             var box = control.AddComponent<BoxCollider>();
-            Bounds hitBounds = localBounds;
-            if (i < 5)
-            {
-                for (int angle = 0; angle <= 75; angle += 5)
-                    for (int c = 0; c < 8; c++)
-                    {
-                        Vector3 corner = localBounds.center + Vector3.Scale(localBounds.extents, new Vector3((c & 1) == 0 ? -1 : 1, (c & 2) == 0 ? -1 : 1, (c & 4) == 0 ? -1 : 1));
-                        hitBounds.Encapsulate(Quaternion.Euler(-angle, 0f, 0f) * corner);
-                    }
-
-                hitBounds.Expand(new Vector3(0.016f, 0.016f, 0.020f));
-            }
-
+            Vector3 shell = prefab.transform.TransformPoint(new Vector3(0f, 0f, -BreakerBoxLayout.BodyDepth));
+            Bounds hitBounds = BreakerBoxHitBounds.Create(localBounds, i < 5, group.InverseTransformPoint(shell).z);
             control.transform.position = group.TransformPoint(hitBounds.center);
             Vector3 size = Vector3.Scale(hitBounds.size, group.lossyScale);
             Vector3 scale = interactionRoot.transform.lossyScale;
             box.size = new Vector3(Mathf.Abs(size.x / scale.x), Mathf.Abs(size.y / scale.y), Mathf.Abs(size.z / scale.z));
-            if (i >= 5)
-            {
-                control.transform.position += group.forward * 0.08f;
-                box.size = new Vector3(Mathf.Max(box.size.x, 0.06f), Mathf.Max(box.size.y, 0.012f), Mathf.Max(box.size.z, 0.015f));
-            }
-
             var component = control.AddComponent<BreakerBoxControl>();
             component.Control = i;
             component.Labels = new[]
@@ -272,7 +255,7 @@ public static class BreakerBoxRuntime
         if (message.Control == 0)
             state.SetMaster(!state.Master);
         else if (message.Control <= 4)
-            state.Channels[message.Control - 1] = !state.Channels[message.Control - 1];
+            state.ToggleChannel(message.Control - 1);
         else if (message.Control == 5)
             state.Display = 1 - state.Display;
         else
@@ -291,7 +274,7 @@ public static class BreakerBoxRuntime
 
     private static void StoreSnapshot(Snapshot snapshot)
     {
-        if (snapshot.Limit > 5 || snapshot.Display > 1)
+        if (snapshot.Limit > 5 || snapshot.Display > 1 || snapshot.WrongWay > 15)
             return;
         var key = new PartContext(snapshot.Ship, snapshot.Part);
         if (Snapshots.TryGetValue(key, out var current) && snapshot.Revision <= current.Revision)
@@ -327,12 +310,13 @@ public static class BreakerBoxRuntime
             Flags = flags,
             Limit = (byte)state.Limit,
             Display = (byte)state.Display,
+            WrongWay = state.WrongWay,
             A = input[0],
             B = input[1],
             C = input[2],
             D = input[3]
         };
-        bool changed = !Snapshots.TryGetValue(key, out var previous) || (snapshot.Flags != previous.Flags || snapshot.Limit != previous.Limit || snapshot.Display != previous.Display || snapshot.A != previous.A || snapshot.B != previous.B || snapshot.C != previous.C || snapshot.D != previous.D);
+        bool changed = !Snapshots.TryGetValue(key, out var previous) || (snapshot.Flags != previous.Flags || snapshot.Limit != previous.Limit || snapshot.Display != previous.Display || snapshot.WrongWay != previous.WrongWay || snapshot.A != previous.A || snapshot.B != previous.B || snapshot.C != previous.C || snapshot.D != previous.D);
         StoreSnapshot(snapshot);
         if (connection != null)
             _network.ServerManager.Broadcast(connection, snapshot, true, Channel.Reliable);

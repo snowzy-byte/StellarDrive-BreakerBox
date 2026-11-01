@@ -15,31 +15,19 @@ using Players.Interface.Model;
 using System.Collections.Generic;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(BreakerBoxMod.BreakerBoxMod), "BreakerBox", "1.1.0", "Ghost", null)]
+[assembly: MelonInfo(typeof(BreakerBoxMod.BreakerBoxMod), "BreakerBox", "1.2.0", "Ghost", null)]
 [assembly: MelonGame("CuriousOwlGames", "StellarDrive")]
 [assembly: MelonPriority(100)]
-[assembly: AssemblyVersion("1.1.0.0")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
 namespace BreakerBoxMod;
 public class BreakerBoxMod : MelonMod
 {
     public const ushort BreakerBoxPartId = 8888;
     public static CustomPartDefinition Definition;
-    public static readonly Vector3[] SocketInPositions =
-    {
-        new Vector3(-0.068f, -0.18f, 0.0275f),
-        new Vector3(0.044f, -0.18f, 0.0275f),
-        new Vector3(0.156f, -0.18f, 0.0275f),
-        new Vector3(0.268f, -0.18f, 0.0275f)
-    };
-    public static readonly Vector3[] SocketOutPositions =
-    {
-        new Vector3(-0.068f, 0.18f, 0.0275f),
-        new Vector3(0.044f, 0.18f, 0.0275f),
-        new Vector3(0.156f, 0.18f, 0.0275f),
-        new Vector3(0.268f, 0.18f, 0.0275f)
-    };
-    public static readonly Vector3 TripSocketOffset = new Vector3(-0.38f, 0f, 0.0275f);
+    public static readonly Vector3[] SocketInPositions = Enumerable.Range(0, 4).Select(BreakerBoxLayout.Input).ToArray();
+    public static readonly Vector3[] SocketOutPositions = Enumerable.Range(0, 4).Select(BreakerBoxLayout.Output).ToArray();
+    public static readonly Vector3 TripSocketOffset = BreakerBoxLayout.TripPosition;
     public override void OnInitializeMelon()
     {
         InstallSDModKitHelpers();
@@ -148,8 +136,9 @@ public class BreakerBoxMod : MelonMod
         };
         visualRoot.transform.SetParent(prefab.transform, false);
         visualRoot.AddComponent<DefaultShipPartVisuals>();
-        GameObject model = BreakerBoxMeshLoader.CreateMeshVisual(material, "BreakerBoxVisual", new Color(0.75f, 0.77f, 0.8f));
+        GameObject model = BreakerBoxModel.CreateMeshVisual(material, "BreakerBoxVisual");
         model.transform.SetParent(visualRoot.transform, false);
+        model.transform.localPosition = Vector3.up * BreakerBoxLayout.CenterY;
         model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
         foreach (Transform child in model.GetComponentsInChildren<Transform>(true))
             child.gameObject.layer = visualRoot.layer;
@@ -158,11 +147,11 @@ public class BreakerBoxMod : MelonMod
         settings.localizedDescription = null;
         settings.mass = 5f;
         settings.snappingStyle = SnappingStyle.PreciseOnWall;
-        settings.size = new Vector3(0.86f, 0.36f, 0.13f);
+        settings.size = BreakerBoxLayout.Size;
         settings.thumbnailRotation = Quaternion.identity;
         ShipPartBounds bounds = prefab.GetComponent<ShipPartBounds>() ?? prefab.AddComponent<ShipPartBounds>();
-        bounds.center = new Vector3(0f, 0f, -0.065f);
-        bounds.bounds = new Vector3(0.86f, 0.36f, 0.13f);
+        bounds.center = BreakerBoxLayout.BoundsCenter;
+        bounds.bounds = BreakerBoxLayout.BoundsSize;
         GameObject interactionRoot = new GameObject("BreakerBoxPartInteractions")
         {
             layer = interactionLayer,
@@ -173,8 +162,8 @@ public class BreakerBoxMod : MelonMod
         PartInteraction pickup = interactionRoot.AddComponent<PartInteraction>();
         Traverse.Create(pickup).Field("interactions").SetValue(pickupLabels);
         BoxCollider box = interactionRoot.AddComponent<BoxCollider>();
-        box.center = new Vector3(0f, 0f, -0.04f);
-        box.size = new Vector3(0.86f, 0.36f, 0.08f);
+        box.center = new Vector3(BreakerBoxLayout.BoundsCenter.x, BreakerBoxLayout.CenterY, -BreakerBoxLayout.BodyDepth / 2f);
+        box.size = new Vector3(BreakerBoxLayout.BoundsSize.x, BreakerBoxLayout.BoundsSize.y, BreakerBoxLayout.BodyDepth);
         BreakerBoxRuntime.Configure(settings, prefab);
         if (visualRoot.GetComponentsInChildren<Collider>(true).Length != 0)
             throw new InvalidOperationException("BreakerBox visual must not contain colliders");
@@ -217,38 +206,6 @@ public class BreakerBoxMod : MelonMod
         socket.visualObject.transform.localRotation = Quaternion.identity;
         socket.interactive.transform.localPosition = Vector3.zero;
         socket.interactive.transform.localRotation = Quaternion.identity;
-        float rear = float.NegativeInfinity;
-        foreach (MeshFilter mf in socket.visualObject.GetComponentsInChildren<MeshFilter>(true))
-        {
-            if (mf.sharedMesh == null)
-                continue;
-            Bounds b = mf.sharedMesh.bounds;
-            for (int c = 0; c < 8; c++)
-            {
-                Vector3 corner = b.center + Vector3.Scale(b.extents, new Vector3((c & 1) == 0 ? -1 : 1, (c & 2) == 0 ? -1 : 1, (c & 4) == 0 ? -1 : 1));
-                rear = Mathf.Max(rear, socket.visualObject.transform.InverseTransformPoint(mf.transform.TransformPoint(corner)).z);
-            }
-        }
-
-        if (!float.IsInfinity(rear))
-        {
-            socket.visualObject = SeatTemplate(socket.visualObject, copy.transform, rear, "SeatedVisual");
-            socket.interactive = SeatTemplate(socket.interactive, copy.transform, rear, "SeatedInteraction");
-        }
-
         return socket;
     }
-
-    private static GameObject SeatTemplate(GameObject template, Transform parent, float rear, string name)
-    {
-        var wrapper = new GameObject(name)
-        {
-            layer = template.layer
-        };
-        wrapper.transform.SetParent(parent, false);
-        template.transform.SetParent(wrapper.transform, false);
-        template.transform.localPosition = new Vector3(0f, 0f, -rear);
-        return wrapper;
-    }
 }
-
