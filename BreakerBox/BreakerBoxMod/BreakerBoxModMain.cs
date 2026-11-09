@@ -15,11 +15,11 @@ using Players.Interface.Model;
 using System.Collections.Generic;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(BreakerBoxMod.BreakerBoxMod), "BreakerBox", "1.2.0", "Ghost", null)]
+[assembly: MelonInfo(typeof(BreakerBoxMod.BreakerBoxMod), "BreakerBox", "1.3.0", "Ghost", null)]
 [assembly: MelonGame("CuriousOwlGames", "StellarDrive")]
 [assembly: MelonPriority(100)]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]
 namespace BreakerBoxMod;
 public class BreakerBoxMod : MelonMod
 {

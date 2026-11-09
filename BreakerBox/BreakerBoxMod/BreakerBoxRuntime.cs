@@ -81,7 +81,7 @@ public static class BreakerBoxRuntime
     {
         Id = "breakerbox",
         Name = "Breaker Box",
-        Version = "1.2.0",
+        Version = "1.3.0",
         Assembly = typeof(BreakerBoxRuntime).Assembly
     };
     public static string HoverLabel;

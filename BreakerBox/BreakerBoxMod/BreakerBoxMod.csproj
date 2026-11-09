@@ -17,6 +17,10 @@
     <Compile Include="*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="netstandard">
+      <HintPath>$(GamePath)\StellarDrive_Data\Managed\netstandard.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Tools">
       <HintPath>$(GamePath)\StellarDrive_Data\Managed\Tools.dll</HintPath>
       <Private>false</Private>

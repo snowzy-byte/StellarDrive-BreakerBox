@@ -3,7 +3,7 @@ If you find any bug tell me on discord: benmal0_0
 
 [English below](#english)
 
-**Versão 1.2.0 · Criado por Ghost**
+**Versão 1.3.0 · Criado por Ghost**
 
 ![Breaker Box instalada e conectada / Installed and connected Breaker Box](images/breaker-box.png)
 
@@ -28,7 +28,7 @@ Uma caixa de disjuntores para organizar e interromper os cabos da sua nave. Mont
 
 1. Feche o jogo.
 2. Instale o MelonLoader e o SDModKit, caso ainda não estejam instalados.
-3. Baixe o [ZIP da versão 1.2.0](https://github.com/snowzy-byte/StellarDrive-BreakerBox/releases/download/v1.2.0/StellarDrive-BreakerBox.zip?download=1) e extraia seu conteúdo na pasta de instalação do jogo, mesclando a pasta `Mods`.
+3. Baixe o [ZIP da versão 1.3.0](https://github.com/snowzy-byte/StellarDrive-BreakerBox/releases/download/v1.3.0/StellarDrive-BreakerBox.zip?download=1) e extraia seu conteúdo na pasta de instalação do jogo, mesclando a pasta `Mods`.
 4. Inicie o jogo e procure **Breaker Box** no menu de construção.
 5. Monte a caixa em uma parede e conecte os cabos de sinal.
 
@@ -60,7 +60,7 @@ O LED da chave geral fica verde quando ligada e apagado quando desligada.
 
 ## English
 
-**Version 1.2.0 · Created by Ghost**
+**Version 1.3.0 · Created by Ghost**
 
 A breaker box for organizing and interrupting your ship's signal wiring. Mount it on a wall, connect the cables and control four independent channels, with a master switch, remote trip and signal limit protection.
 
@@ -83,7 +83,7 @@ A breaker box for organizing and interrupting your ship's signal wiring. Mount i
 
 1. Close the game.
 2. Install MelonLoader and SDModKit if they are not already installed.
-3. Download the [version 1.2.0 ZIP](https://github.com/snowzy-byte/StellarDrive-BreakerBox/releases/download/v1.2.0/StellarDrive-BreakerBox.zip?download=1) and extract its contents into the game installation directory, merging the `Mods` folder.
+3. Download the [version 1.3.0 ZIP](https://github.com/snowzy-byte/StellarDrive-BreakerBox/releases/download/v1.3.0/StellarDrive-BreakerBox.zip?download=1) and extract its contents into the game installation directory, merging the `Mods` folder.
 4. Start the game and look for **Breaker Box** in the build menu.
 5. Mount the box on a wall and connect the signal cables.
 

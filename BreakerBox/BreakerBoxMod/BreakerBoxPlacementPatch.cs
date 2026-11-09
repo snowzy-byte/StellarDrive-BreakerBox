@@ -26,21 +26,24 @@ public static class BreakerBoxPlacementPatch
 
     public static void Postfix(SnapDetectionState state, ref SnapDetectionResults __result)
     {
-        if (!__result.IsSnapped || __result.shipPartsProxy == null || state.partSettings == null
+        if (!__result.IsSnapped || __result.shipPartsProxy == null || state.PartSettings == null
             || !(__result.placement is FloatingPartPlacement placement))
             return;
         var ships = GameRefs.Service<ShipsClientTracker>();
         if (ships == null || !ships.TryGetShip(__result.shipPartsProxy.ShipId, out IShipStateRead ship))
             return;
-        bool breaker = state.partSettings.id == BreakerBoxMod.BreakerBoxPartId;
+        bool breaker = state.PartSettings.id == BreakerBoxMod.BreakerBoxPartId;
         var source = new List<BreakerBoxSocketSnap.Port>();
-        foreach (LocalPort port in Ports(state.partSettings))
+        foreach (LocalPort port in Ports(state.PartSettings))
             source.Add(World(port, placement.Coord, placement.Rotation, breaker));
         if (source.Count == 0) return;
         var targets = new List<BreakerBoxSocketSnap.Port>();
         var connections = GameRefs.Service<ConnectionsClientTracker>();
         foreach (StatefulPart part in ship.StatefulParts)
         {
+            if (state.IgnoredPart.HasValue && state.IgnoredPart.Value.ShipId == ship.Id
+                && state.IgnoredPart.Value.PartId == part.Id)
+                continue;
             bool otherBreaker = part.Settings.id == BreakerBoxMod.BreakerBoxPartId;
             if (!breaker && !otherBreaker || (part.LocalPosition - placement.Coord).sqrMagnitude > 2.25f)
                 continue;
@@ -52,7 +55,7 @@ public static class BreakerBoxPlacementPatch
         Vector3 normal = breaker ? -(placement.Rotation * Vector3.forward) : placement.Rotation * Vector3.up;
         if (!BreakerBoxSocketSnap.TryShift(source, targets, normal, delta =>
             grid.IsFloatingPlacementFree(new FloatingPartPlacement(placement.Coord + delta,
-                placement.ForwardOrientation, placement.UpOrientation), state.partSettings.Bounds), out Vector3 shift))
+                placement.ForwardOrientation, placement.UpOrientation), state.PartSettings.Bounds, state.IgnoredPart), out Vector3 shift))
             return;
         placement.Coord += shift;
         __result.placement = placement;
